@@ -12,10 +12,33 @@
 </head>
 <body>
 <script>
-  // Immediate redirect
-  window.location.href = "https://www.ahmedsharyph.mv/p/funatrace-v3.html";
+  // Function to check if PWA is installed
+  function isPWAInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches || 
+           window.navigator.standalone === true ||
+           document.referrer.includes('android-app://');
+  }
+
+  // Function to handle install completion
+  function handleInstallComplete() {
+    // Only redirect if not installed and first visit in this session
+    if (!isPWAInstalled() && !sessionStorage.getItem('installAttempted')) {
+      sessionStorage.setItem('installAttempted', 'true');
+      window.location.href = "https://www.ahmedsharyph.mv/p/funatrace-v3.html";
+    }
+  }
+
+  // Check immediately if already installed (no need to wait for install.js)
+  if (isPWAInstalled()) {
+    // Optionally do something different for installed users
+  } else {
+    // Load the install script
+    const script = document.createElement('script');
+    script.src = "https://ahmedsharyph.github.io/funatrace/install.js";
+    script.defer = true;
+    script.onload = handleInstallComplete;
+    document.body.appendChild(script);
+  }
 </script>
-<!-- PWA Installation Script -->
-<script src="https://ahmedsharyph.github.io/funatrace/install.js" defer></script>
 </body>
 </html>
