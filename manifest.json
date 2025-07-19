@@ -1,0 +1,15 @@
+{
+  "name": "FunaTrace",
+  "short_name": "FunaTrace",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#00bcd4",
+  "theme_color": "#00bcd4",
+  "icons": [
+    {
+      "src": "https://your-username.github.io/your-repo/funatrace-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
