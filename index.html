@@ -103,18 +103,75 @@
         padding: 10px 16px;
       }
     }
-  </style>
+
+    .app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the whole block */
+  gap: 1rem;
+  padding: 1rem;
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+.app-logo {
+  width: 48px;
+  height: 48px;
+}
+
+@media (max-width: 600px) {
+  .app-logo {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (min-width: 601px) {
+  .app-logo {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+.app-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007C91;
+}
+
+.app-description {
+  font-size: 1rem;
+  color: #555;
+}
+</style>
 </head>
 <body>
-
+<!-- Responsive Header (Centered with Logo and Text) -->
+<div class="app-header">
+  <img src="https://ahmedsharyph.github.io/funatrace/ft_logo.png" alt="FunaTrace Logo" class="app-logo">
+  <div class="app-text">
+    <div class="app-title">FunaTrace</div>
+    <div class="app-description">Funadhoo Location Finder</div>
+  </div>
+</div>
+  
+<!-- Search Box with Clear Button -->
 <div class="dropdown-container">
   <input id="dropdown" list="houses-list" placeholder="Search..." autocomplete="off" />
   <button id="clear-dropdown" title="Clear">✖️</button>
   <datalist id="houses-list"></datalist>
 </div>
 
+<!-- Loading Message -->
 <div id="loader">Loading map data...</div>
-
+  
+<!-- Map Container with Buttons -->
 <div id="map">
   <div id="floating-button-container">
     <button id="directions-btn" class="map-button" style="display:none;">🧭 Get Directions</button>
