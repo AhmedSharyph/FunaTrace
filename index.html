@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="FunaTrace helps you find every address in Sh. Funadhoo with pinpoint accuracy. The island's most reliable location finder.">
+
+  <link rel="manifest" href="https://your-username.github.io/your-repo/manifest.json">
+  <link rel="apple-touch-icon" href="https://your-username.github.io/your-repo/funatrace-logo.png">
+  <meta name="theme-color" content="#00bcd4">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 85vh;
+      width: 100%;
+      position: relative;
+    }
+    .dropdown-container {
+      padding: 10px;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+    }
+    #dropdown {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    #clear-dropdown {
+      margin-left: 8px;
+      padding: 8px 12px;
+      border: none;
+      background: #eee;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #clear-dropdown:hover { background: #ddd; }
+    #loader {
+      text-align: center;
+      padding: 10px;
+      font-size: 16px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<div class="dropdown-container">
+  <input id="dropdown" list="houses-list" placeholder="Search..." autocomplete="off" />
+  <button id="clear-dropdown" title="Clear">✖️</button>
+  <datalist id="houses-list"></datalist>
+</div>
+
+<div id="loader">Loading map data...</div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz8_X-uaxok6xQK0mog2hIvYVN_D3ydOPGOHdXC8SZ8tHulyVo2xm76NSTHCWaQ_8KzIg/exec?type=address";
+
+const map = L.map('map').setView([6.1535, 73.28975], 15);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+let houseData = [];
+
+async function loadHouses() {
+  try {
+    const res = await fetch(GAS_URL);
+    houseData = await res.json();
+    if (!Array.isArray(houseData)) throw new Error("Unexpected format");
+    document.getElementById("loader").style.display = "none";
+    populateDropdown(houseData);
+  } catch (e) {
+    alert("Failed to load house data.");
+    console.error(e);
+  }
+}
+
+function populateDropdown(data) {
+  const datalist = document.getElementById("houses-list");
+  datalist.innerHTML = '';
+  data.forEach(h => {
+    const lat = Number(h.lat ?? h.latitude);
+    const lng = Number(h.lng ?? h.longitude);
+    if (h.name && !isNaN(lat) && !isNaN(lng)) {
+      const option = document.createElement("option");
+      option.value = h.name;
+      datalist.appendChild(option);
+    }
+  });
+}
+
+function zoomToHouse(name) {
+  const house = houseData.find(h => h.name?.toLowerCase() === name.toLowerCase());
+  if (!house) return alert("House not found.");
+  const lat = Number(house.lat ?? house.latitude);
+  const lng = Number(house.lng ?? house.longitude);
+  if (isNaN(lat) || isNaN(lng)) return alert("Invalid coordinates.");
+  map.setView([lat, lng], 18);
+  L.marker([lat, lng]).addTo(map).bindPopup(`<strong>${house.name}</strong>`).openPopup();
+}
+
+document.getElementById("dropdown").addEventListener("change", e => zoomToHouse(e.target.value.trim()));
+document.getElementById("clear-dropdown").addEventListener("click", () => {
+  document.getElementById("dropdown").value = '';
+  map.setView([6.1535, 73.28975], 15);
+});
+
+loadHouses();
+</script>
+
+<script src="https://your-username.github.io/your-repo/install.js" defer></script>
+</body>
+</html>
