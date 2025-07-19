@@ -1,14 +1,14 @@
 {
   "name": "FunaTrace",
   "short_name": "FunaTrace",
-  "start_url": "/funatrace-test/",
+  "start_url": "/FunaTrace/",
   "scope": "/funatrace-test/",
   "display": "standalone",
   "background_color": "#00bcd4",
   "theme_color": "#00bcd4",
   "icons": [
     {
-      "src": "/funatrace-test/funatrace-logo.png",
+      "src": "/FunaTrace/funatrace-logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
