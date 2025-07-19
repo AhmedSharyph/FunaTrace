@@ -64,7 +64,15 @@
 </div>
 
 <div id="loader">Loading map data...</div>
-<div id="map"></div>
+
+<div id="map">
+  <div id="floating-button-container">
+    <button id="directions-btn" class="map-button" style="display:none;">🧭 Get Directions</button>
+    <button id="googlemaps-btn" class="map-button" style="display:none;">🗺️ Opens Google Maps</button>
+    <button id="share-btn" class="map-button" style="display:none;">📤 Share Location</button>
+    <button id="reset-btn" class="map-button">🔄 Reset View</button>
+  </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
