@@ -8,7 +8,7 @@
   "theme_color": "#00bcd4",
   "icons": [
     {
-      "src": "/FunaTrace/funatrace-logo.png",
+      "src": "/FunaTrace/ft_logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
