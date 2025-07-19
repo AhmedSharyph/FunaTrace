@@ -1,13 +1,14 @@
 {
   "name": "FunaTrace",
   "short_name": "FunaTrace",
-  "start_url": "/",
+  "start_url": "/funatrace-test/",
+  "scope": "/funatrace-test/",
   "display": "standalone",
   "background_color": "#00bcd4",
   "theme_color": "#00bcd4",
   "icons": [
     {
-      "src": "https://ahmedsharyph.github.io/funatrace-test/funatrace-logo.png",
+      "src": "/funatrace-test/funatrace-logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
