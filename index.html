@@ -1,44 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="FunaTrace helps you find every address in Sh. Funadhoo with pinpoint accuracy. The island's most reliable location finder.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FunaTrace Redirect</title>
   
   <!-- PWA Metadata -->
   <link rel="manifest" href="https://ahmedsharyph.github.io/funatrace/manifest.json">
   <link rel="apple-touch-icon" href="https://ahmedsharyph.github.io/funatrace/ft_logo.png">
   <meta name="theme-color" content="#00bcd4">
-</head>
-<body>
-<script>
-  // Function to check if PWA is installed
-  function isPWAInstalled() {
-    return window.matchMedia('(display-mode: standalone)').matches || 
-           window.navigator.standalone === true ||
-           document.referrer.includes('android-app://');
-  }
 
-  // Function to handle install completion
-  function handleInstallComplete() {
-    // Only redirect if not installed and first visit in this session
-    if (!isPWAInstalled() && !sessionStorage.getItem('installAttempted')) {
-      sessionStorage.setItem('installAttempted', 'true');
+  <script>
+    // Store the beforeinstallprompt event for later use
+    let deferredPrompt;
+    
+    // Check if already installed
+    function isPWAInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches || 
+             window.navigator.standalone ||
+             document.referrer.includes('android-app://');
+    }
+
+    // Handle the install prompt
+    function handleInstallPrompt() {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        
+        // Create a floating install button
+        createInstallButton();
+      });
+    }
+
+    // Create a floating install button that persists
+    function createInstallButton() {
+      const installBtn = document.createElement('button');
+      installBtn.id = 'floating-install-btn';
+      installBtn.textContent = 'Install FunaTrace PWA';
+      installBtn.style.position = 'fixed';
+      installBtn.style.bottom = '20px';
+      installBtn.style.right = '20px';
+      installBtn.style.zIndex = '9999';
+      installBtn.style.padding = '10px 15px';
+      installBtn.style.backgroundColor = '#00bcd4';
+      installBtn.style.color = 'white';
+      installBtn.style.border = 'none';
+      installBtn.style.borderRadius = '5px';
+      installBtn.style.cursor = 'pointer';
+      
+      installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installBtn.textContent = 'Installed!';
+            installBtn.disabled = true;
+          }
+          deferredPrompt = null;
+        }
+      });
+      
+      document.body.appendChild(installBtn);
+    }
+
+    // Main execution
+    if (!isPWAInstalled()) {
+      // Set up the install prompt handler
+      handleInstallPrompt();
+      
+      // Immediately redirect while keeping the install option
       window.location.href = "https://www.ahmedsharyph.mv/p/funatrace-v3.html";
     }
-  }
-
-  // Check immediately if already installed (no need to wait for install.js)
-  if (isPWAInstalled()) {
-    // Optionally do something different for installed users
-  } else {
-    // Load the install script
-    const script = document.createElement('script');
-    script.src = "https://ahmedsharyph.github.io/funatrace/install.js";
-    script.defer = true;
-    script.onload = handleInstallComplete;
-    document.body.appendChild(script);
-  }
-</script>
+  </script>
+</head>
+<body>
+  <!-- The PWA installation script -->
+  <script src="https://ahmedsharyph.github.io/funatrace/install.js" defer></script>
+  
+  <!-- This script will run after the redirect -->
+  <script>
+    // After redirect, this will execute on the destination page
+    if (!isPWAInstalled() && deferredPrompt) {
+      createInstallButton();
+    }
+  </script>
 </body>
 </html>
