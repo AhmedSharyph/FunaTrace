@@ -4,11 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="FunaTrace helps you find every address in Sh. Funadhoo with pinpoint accuracy. The island's most reliable location finder.">
-
-  <link rel="manifest" href="https://your-username.github.io/your-repo/manifest.json">
-  <link rel="apple-touch-icon" href="https://your-username.github.io/your-repo/funatrace-logo.png">
-  <meta name="theme-color" content="#00bcd4">
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     body, html {
@@ -38,6 +33,50 @@
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+    #loader {
+      text-align: center;
+      padding: 10px;
+      font-size: 16px;
+      color: #666;
+    }
+    #floating-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1600;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+      width: 220px;
+      pointer-events: auto;
+    }
+    .map-button {
+      width: 100%;
+      padding: 10px 16px;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s ease;
+    }
+    #directions-btn { background: #f39c12; }
+    #directions-btn:hover { background: #d78c0a; }
+    #googlemaps-btn { background: #1a73e8; }
+    #googlemaps-btn:hover { background: #155ea1; }
+    #share-btn { background: #4caf50; }
+    #share-btn:hover { background: #3b9c40; }
+    #reset-btn {
+      background: #e74c3c;
+      text-align: center;
+      align-self: flex-start;
+      display: none; /* hide on load */
+    }
+    #reset-btn:hover { background: #c0392b; }
     #clear-dropdown {
       margin-left: 8px;
       padding: 8px 12px;
@@ -47,11 +86,16 @@
       cursor: pointer;
     }
     #clear-dropdown:hover { background: #ddd; }
-    #loader {
-      text-align: center;
-      padding: 10px;
-      font-size: 16px;
-      color: #666;
+    @media (max-width: 480px) {
+      #floating-button-container {
+        top: 10px;
+        right: 10px;
+        width: auto;
+      }
+      #reset-btn {
+        font-size: 16px;
+        padding: 10px 16px;
+      }
     }
   </style>
 </head>
@@ -73,7 +117,7 @@
     <button id="reset-btn" class="map-button">🔄 Reset View</button>
   </div>
 </div>
-
+  
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbz8_X-uaxok6xQK0mog2hIvYVN_D3ydOPGOHdXC8SZ8tHulyVo2xm76NSTHCWaQ_8KzIg/exec?type=address";
@@ -295,7 +339,5 @@ window.onload = () => {
   requestUserLocation();
 };
 </script>
-
-<script src="https://your-username.github.io/your-repo/install.js" defer></script>
 </body>
 </html>
