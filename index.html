@@ -39,6 +39,10 @@
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+    #dropdown:disabled {
+      background: #f9f9f9;
+      cursor: not-allowed;
+    }
     #loader {
       text-align: center;
       padding: 10px;
@@ -51,6 +55,7 @@
       right: 20px;
       z-index: 1600;
       display: flex;
+      flex-wrap: wrap; /* allow wrap on small screens */
       flex-direction: column;
       gap: 10px;
       align-items: flex-end;
@@ -92,11 +97,32 @@
       cursor: pointer;
     }
     #clear-dropdown:hover { background: #ddd; }
+    #clear-dropdown:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+    }
+    #retry-btn {
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: none;
+    }
+    #retry-btn:hover {
+      background: #155ea1;
+    }
     @media (max-width: 480px) {
       #floating-button-container {
         top: 10px;
         right: 10px;
         width: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
       }
       #reset-btn {
         font-size: 16px;
@@ -105,72 +131,73 @@
     }
 
     .app-header {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Center the whole block */
-  gap: 1rem;
-  padding: 1rem;
-  flex-wrap: wrap;
-  text-align: left;
-}
+      display: flex;
+      align-items: center;
+      justify-content: center; /* Center the whole block */
+      gap: 1rem;
+      padding: 1rem;
+      flex-wrap: wrap;
+      text-align: left;
+    }
 
-.app-logo {
-  width: 48px;
-  height: 48px;
-}
+    .app-logo {
+      width: 48px;
+      height: 48px;
+    }
 
-@media (max-width: 600px) {
-  .app-logo {
-    width: 32px;
-    height: 32px;
-  }
-}
+    @media (max-width: 600px) {
+      .app-logo {
+        width: 32px;
+        height: 32px;
+      }
+    }
 
-@media (min-width: 601px) {
-  .app-logo {
-    width: 64px;
-    height: 64px;
-  }
-}
+    @media (min-width: 601px) {
+      .app-logo {
+        width: 64px;
+        height: 64px;
+      }
+    }
 
-.app-text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+    .app-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
-.app-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #007C91;
-}
+    .app-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #007C91;
+    }
 
-.app-description {
-  font-size: 1rem;
-  color: #555;
-}
-</style>
+    .app-description {
+      font-size: 1rem;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
 <!-- Responsive Header (Centered with Logo and Text) -->
 <div class="app-header">
-  <img src="https://ahmedsharyph.github.io/funatrace/ft_logo.png" alt="FunaTrace Logo" class="app-logo">
+  <img src="https://ahmedsharyph.github.io/funatrace/ft_logo.png" alt="FunaTrace Logo" class="app-logo" />
   <div class="app-text">
     <div class="app-title">FunaTrace</div>
     <div class="app-description">Funadhoo Location Finder</div>
   </div>
 </div>
-  
+
 <!-- Search Box with Clear Button -->
 <div class="dropdown-container">
-  <input id="dropdown" list="houses-list" placeholder="Search..." autocomplete="off" />
-  <button id="clear-dropdown" title="Clear">✖️</button>
+  <input id="dropdown" list="houses-list" placeholder="Search..." autocomplete="off" disabled aria-label="Search house name" />
+  <button id="clear-dropdown" title="Clear search" aria-label="Clear search input" disabled>✖️</button>
   <datalist id="houses-list"></datalist>
 </div>
 
-<!-- Loading Message -->
+<!-- Loading Message and Retry Button -->
 <div id="loader">Loading map data...</div>
-  
+<button id="retry-btn" aria-label="Retry loading data">Retry Loading Data</button>
+
 <!-- Map Container with Buttons -->
 <div id="map">
   <div id="floating-button-container">
@@ -180,13 +207,13 @@
     <button id="reset-btn" class="map-button">🔄 Reset View</button>
   </div>
 </div>
-  
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbz8_X-uaxok6xQK0mog2hIvYVN_D3ydOPGOHdXC8SZ8tHulyVo2xm76NSTHCWaQ_8KzIg/exec?type=address";
 
 const defaultCenter = [6.1535, 73.28975];
-const defaultZoom = 15; // Optional – can use fitBounds instead of this
+const defaultZoom = 15;
 
 const funadhooBounds = {
    north: 6.1700,
@@ -195,7 +222,13 @@ const funadhooBounds = {
    west: 73.2842
 };
 
-const map = L.map('map').setView(defaultCenter, defaultZoom);
+const map = L.map('map', {
+  maxBounds: [
+    [funadhooBounds.south, funadhooBounds.west],
+    [funadhooBounds.north, funadhooBounds.east]
+  ],
+  maxBoundsViscosity: 0.8,
+}).setView(defaultCenter, defaultZoom);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -208,6 +241,7 @@ let currentLatLng = null;
 let currentHouseName = "";
 let userLocation = null;
 let userLocationMarker = null;
+let debounceTimer = null;
 
 function isMapAtDefaultView() {
   const center = map.getCenter();
@@ -229,16 +263,36 @@ map.on('moveend', () => {
   }
 });
 
+function setUIEnabled(enabled) {
+  document.getElementById("dropdown").disabled = !enabled;
+  document.getElementById("clear-dropdown").disabled = !enabled;
+  ["directions-btn", "googlemaps-btn", "share-btn", "reset-btn"].forEach(id => {
+    const el = document.getElementById(id);
+    if (id === "reset-btn") {
+      // reset button starts hidden; handled separately
+      return;
+    }
+    el.disabled = !enabled;
+  });
+}
+
 async function loadHouses() {
+  setUIEnabled(false);
+  document.getElementById("loader").style.display = "block";
+  document.getElementById("retry-btn").style.display = "none";
+
   try {
     const res = await fetch(GAS_URL);
     houseData = await res.json();
     if (!Array.isArray(houseData)) throw new Error("Unexpected format");
-    document.getElementById("loader").style.display = "none";
+
     populateDropdown(houseData);
+    document.getElementById("loader").style.display = "none";
+    setUIEnabled(true);
   } catch (e) {
-    alert("Failed to load house data.");
     console.error(e);
+    document.getElementById("loader").textContent = "Failed to load house data.";
+    document.getElementById("retry-btn").style.display = "inline-block";
   }
 }
 
@@ -350,7 +404,19 @@ function requestUserLocation() {
   );
 }
 
-document.getElementById("dropdown").addEventListener("change", e => zoomToHouse(e.target.value.trim()));
+// Debounced input handler for dropdown search input
+document.getElementById("dropdown").addEventListener("input", e => {
+  clearTimeout(debounceTimer);
+  const val = e.target.value.trim();
+  debounceTimer = setTimeout(() => {
+    if (val.length === 0) {
+      resetView();
+      return;
+    }
+    zoomToHouse(val);
+  }, 300);
+});
+
 document.getElementById("clear-dropdown").addEventListener("click", resetView);
 
 document.getElementById("googlemaps-btn").addEventListener("click", () => {
@@ -394,6 +460,11 @@ document.getElementById("share-btn").addEventListener("click", () => {
 });
 
 document.getElementById("reset-btn").addEventListener("click", resetView);
+
+document.getElementById("retry-btn").addEventListener("click", () => {
+  document.getElementById("loader").textContent = "Loading map data...";
+  loadHouses();
+});
 
 // On load
 window.onload = () => {
