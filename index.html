@@ -3,531 +3,238 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="FunaTrace helps you find every address in Sh. Funadhoo with pinpoint accuracy. The island's most reliable location finder.">
-
-  <!-- PWA Metadata -->
-  <link rel="manifest" href="https://ahmedsharyph.github.io/funatrace/manifest.json" />
-  <link rel="apple-touch-icon" href="https://ahmedsharyph.github.io/funatrace/ft_logo.png" />
-  <meta name="theme-color" content="#00bcd4" />
-
+  <title>FunaTrace – Find Every Address in Funadhoo</title>
+  <meta name="description" content="FunaTrace helps you find every address in Sh. Funadhoo with pinpoint accuracy.">
+  <link rel="manifest" href="/manifest.json">
   <style>
-    body, html {
-      margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
     }
     #map {
-      height: 85vh;
       width: 100%;
-      position: relative;
+      height: 100%;
     }
-    .dropdown-container {
-      padding: 10px;
-      background: white;
-      position: sticky;
+    header {
+      position: fixed;
       top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: center;
-    }
-    #dropdown {
       width: 100%;
-      max-width: 400px;
-      padding: 12px 14px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    #dropdown:disabled {
-      background: #f9f9f9;
-      cursor: not-allowed;
-    }
-    #loader {
-      text-align: center;
+      background: #fff;
       padding: 10px;
-      font-size: 16px;
-      color: #666;
-    }
-    #floating-button-container {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 1600;
-      display: flex;
-      flex-wrap: wrap; /* allow wrap on small screens */
-      flex-direction: column;
-      gap: 10px;
-      align-items: flex-end;
-      width: 220px;
-      pointer-events: auto;
-    }
-    .map-button {
-      width: 100%;
-      padding: 10px 16px;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 15px;
-      font-weight: bold;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      cursor: pointer;
-      text-align: left;
-      transition: background 0.2s ease;
-    }
-    #directions-btn { background: #f39c12; }
-    #directions-btn:hover { background: #d78c0a; }
-    #googlemaps-btn { background: #1a73e8; }
-    #googlemaps-btn:hover { background: #155ea1; }
-    #share-btn { background: #4caf50; }
-    #share-btn:hover { background: #3b9c40; }
-    #reset-btn {
-      background: #e74c3c;
-      text-align: center;
-      align-self: flex-start;
-      display: none; /* hide on load */
-    }
-    #reset-btn:hover { background: #c0392b; }
-    #clear-dropdown {
-      margin-left: 8px;
-      padding: 8px 12px;
-      border: none;
-      background: #eee;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #clear-dropdown:hover { background: #ddd; }
-    #clear-dropdown:disabled {
-      background: #f5f5f5;
-      cursor: not-allowed;
-    }
-    #retry-btn {
-      margin-top: 10px;
-      padding: 8px 16px;
-      font-size: 16px;
-      background: #1a73e8;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      display: none;
-    }
-    #retry-btn:hover {
-      background: #155ea1;
-    }
-    @media (max-width: 480px) {
-      #floating-button-container {
-        top: 10px;
-        right: 10px;
-        width: auto;
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-      #reset-btn {
-        font-size: 16px;
-        padding: 10px 16px;
-      }
-    }
-
-    .app-header {
+      z-index: 1000;
       display: flex;
       align-items: center;
-      justify-content: center; /* Center the whole block */
-      gap: 1rem;
-      padding: 1rem;
-      flex-wrap: wrap;
-      text-align: left;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
     }
-
-    .app-logo {
-      width: 48px;
-      height: 48px;
+    header h1 {
+      font-size: 1.2em;
+      margin: 0;
     }
-
-    @media (max-width: 600px) {
-      .app-logo {
-        width: 32px;
-        height: 32px;
-      }
+    header img {
+      height: 36px;
+      margin-right: 10px;
     }
-
-    @media (min-width: 601px) {
-      .app-logo {
-        width: 64px;
-        height: 64px;
-      }
-    }
-
-    .app-text {
+    .search-bar {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
+      align-items: center;
+      gap: 5px;
     }
-
-    .app-title {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #007C91;
+    .search-bar input {
+      padding: 5px;
+      font-size: 1em;
     }
-
-    .app-description {
-      font-size: 1rem;
-      color: #555;
+    #clear-dropdown {
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    .floating-buttons {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 1000;
+    }
+    .floating-buttons button {
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 0.9em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .floating-buttons button:hover {
+      background: #3367d6;
+    }
+    #loader {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      z-index: 2000;
     }
   </style>
 </head>
 <body>
-  <!-- Responsive Header (Centered with Logo and Text) -->
-  <div class="app-header">
-    <img src="https://ahmedsharyph.github.io/funatrace/ft_logo.png" alt="FunaTrace Logo" class="app-logo" />
-    <div class="app-text">
-      <div class="app-title">FunaTrace</div>
-      <div class="app-description">Funadhoo Location Finder</div>
+  <header>
+    <div style="display: flex; align-items: center;">
+      <img src="https://funatrace.blogspot.com/favicon.ico" alt="Logo">
+      <h1>FunaTrace</h1>
     </div>
-  </div>
+    <div class="search-bar">
+      <input list="house-list" id="search-input" placeholder="Search house name..." autocomplete="off" />
+      <button id="clear-dropdown" title="Clear search" aria-label="Clear search">✖️</button>
+      <datalist id="house-list"></datalist>
+    </div>
+  </header>
 
-  <!-- Search Box with Clear Button -->
-  <div class="dropdown-container">
-    <input id="dropdown" list="houses-list" placeholder="Search..." autocomplete="off" disabled aria-label="Search house name" />
-    <button id="clear-dropdown" title="Clear search" aria-label="Clear search input" disabled>✖️</button>
-    <datalist id="houses-list"></datalist>
-  </div>
-
-  <!-- Loading Message and Retry Button -->
-  <div id="loader">Loading map data...</div>
-  <button id="retry-btn" aria-label="Retry loading data">Retry Loading Data</button>
-
-  <!-- Map Container with Buttons -->
   <div id="map"></div>
-  <div id="floating-button-container">
-    <button id="directions-btn" class="map-button" style="display:none;">🧭 Get Directions</button>
-    <button id="googlemaps-btn" class="map-button" style="display:none;">🗺️ Opens Google Maps</button>
-    <button id="share-btn" class="map-button" style="display:none;">📤 Share Location</button>
-    <button id="reset-btn" class="map-button">🔄 Reset View</button>
+  <div id="loader">Loading map and houses…</div>
+
+  <div class="floating-buttons">
+    <button id="reset-btn">Reset</button>
+    <button id="directions-btn">Directions</button>
+    <button id="open-maps-btn">Open in Google Maps</button>
+    <button id="share-btn">Share Location</button>
   </div>
 
   <script>
-    let map;
-    let marker = null;
-    let userMarker = null;
-    let houseData = [];
-    let currentLatLng = null;
-    let currentHouseName = "";
-    let userLocation = null;
-    let debounceTimer = null;
-
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz8_X-uaxok6xQK0mog2hIvYVN_D3ydOPGOHdXC8SZ8tHulyVo2xm76NSTHCWaQ_8KzIg/exec?type=address";
-
-    const defaultCenter = { lat: 6.1535, lng: 73.28975 };
-    const defaultZoom = 15;
+    let map, currentMarker = null, houseData = [];
 
     const funadhooBounds = {
-      north: 6.1700,
-      south: 6.1370,
-      east: 73.2953,
-      west: 73.2842
+      north: 6.1585,
+      south: 6.1525,
+      east: 73.2895,
+      west: 73.2810
     };
-
-    function setUIEnabled(enabled) {
-      document.getElementById("dropdown").disabled = !enabled;
-      document.getElementById("clear-dropdown").disabled = !enabled;
-      ["directions-btn", "googlemaps-btn", "share-btn"].forEach(id => {
-        const el = document.getElementById(id);
-        el.disabled = !enabled;
-      });
-    }
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        center: defaultCenter,
-        zoom: defaultZoom,
+        center: { lat: 6.1555, lng: 73.2855 },
+        zoom: 17,
+        gestureHandling: 'greedy',
         restriction: {
           latLngBounds: {
             north: funadhooBounds.north,
             south: funadhooBounds.south,
             east: funadhooBounds.east,
-            west: funadhooBounds.west,
+            west: funadhooBounds.west
           },
-          strictBounds: false,
+          strictBounds: false
         },
-        gestureHandling: 'greedy', // enables one-finger zoom on touch devices
         mapTypeControl: false,
-        fullscreenControl: false,
-        streetViewControl: false,
-        zoomControl: true,
-      });
-
-      // When map idle (stopped moving), show/hide reset button
-      map.addListener('idle', () => {
-        const center = map.getCenter();
-        const zoom = map.getZoom();
-        const resetBtn = document.getElementById("reset-btn");
-
-        if (
-          Math.abs(center.lat() - defaultCenter.lat) < 0.0001 &&
-          Math.abs(center.lng() - defaultCenter.lng) < 0.0001 &&
-          zoom === defaultZoom
-        ) {
-          resetBtn.style.display = "none";
-        } else {
-          resetBtn.style.display = "inline-block";
-        }
+        streetViewControl: false
       });
 
       loadHouses();
       requestUserLocation();
     }
 
-    async function loadHouses() {
-      setUIEnabled(false);
-      document.getElementById("loader").style.display = "block";
-      document.getElementById("retry-btn").style.display = "none";
-      document.getElementById("loader").textContent = "Loading map data...";
-
-      try {
-        const res = await fetch(GAS_URL);
-        houseData = await res.json();
-
-        if (!Array.isArray(houseData)) throw new Error("Unexpected data format");
-
-        populateDropdown(houseData);
-        document.getElementById("loader").style.display = "none";
-        setUIEnabled(true);
-      } catch (e) {
-        console.error(e);
-        document.getElementById("loader").textContent = "Failed to load house data.";
-        document.getElementById("retry-btn").style.display = "inline-block";
-      }
-    }
-
-    function populateDropdown(data) {
-      const datalist = document.getElementById("houses-list");
-      datalist.innerHTML = "";
-      data.forEach(h => {
-        if (h.name) {
-          const option = document.createElement("option");
-          option.value = h.name;
-          datalist.appendChild(option);
-        }
-      });
-    }
-
-    function clearMarker() {
-      if (marker) {
-        marker.setMap(null);
-        marker = null;
-      }
-    }
-
-    function zoomToHouse(name) {
-      clearMarker();
-      const house = houseData.find(h => h.name?.toLowerCase() === name.toLowerCase());
-      if (!house) return alert("House not found.");
-      const lat = Number(house.lat ?? house.latitude);
-      const lng = Number(house.lng ?? house.longitude);
-      if (isNaN(lat) || isNaN(lng)) return alert("Invalid coordinates.");
-
-      const pos = { lat, lng };
-      map.panTo(pos);
-      map.setZoom(18);
-
-      marker = new google.maps.Marker({
-        position: pos,
-        map,
-        title: house.name,
-      });
-
-      const infoWindow = new google.maps.InfoWindow({
-        content: `<strong>${house.name}</strong>`,
-      });
-      infoWindow.open(map, marker);
-
-      currentLatLng = pos;
-      currentHouseName = house.name;
-
-      ["directions-btn", "googlemaps-btn", "share-btn"].forEach(id => {
-        document.getElementById(id).style.display = "inline-block";
-      });
-      document.getElementById("reset-btn").style.display = "inline-block";
-    }
-
-    function resetView() {
-      clearMarker();
-      map.panTo(defaultCenter);
-      map.setZoom(defaultZoom);
-      document.getElementById("dropdown").value = "";
-      ["directions-btn", "googlemaps-btn", "share-btn"].forEach(id => {
-        document.getElementById(id).style.display = "none";
-      });
-      document.getElementById("reset-btn").style.display = "none";
-
-      currentLatLng = null;
-      currentHouseName = "";
-
-      if (userMarker) {
-        userMarker.setMap(null);
-        userMarker = null;
-      }
-    }
-
-    function isMobileDevice() {
-      return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
-    function showUserLocationMarker(lat, lng) {
-      if (userMarker) {
-        userMarker.setMap(null);
-      }
-      const pos = { lat, lng };
-      userMarker = new google.maps.Marker({
-        position: pos,
-        map,
-        title: "Your Location",
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: "#4285F4",
-          fillOpacity: 0.8,
-          strokeWeight: 2,
-          strokeColor: "white",
-        }
-      });
-
-      const infoWindow = new google.maps.InfoWindow({
-        content: "You are here",
-      });
-      infoWindow.open(map, userMarker);
-
-      setTimeout(() => {
-        infoWindow.close();
-      }, 5000);
-    }
-
-    function requestUserLocation() {
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-
-          if (!isMobileDevice()) {
-            showUserLocationMarker(userLocation.lat, userLocation.lng);
-
-            const insideFunadhoo =
-              userLocation.lat >= funadhooBounds.south &&
-              userLocation.lat <= funadhooBounds.north &&
-              userLocation.lng >= funadhooBounds.west &&
-              userLocation.lng <= funadhooBounds.east;
-
-            if (!insideFunadhoo) {
-              alert("Your device location appears outside Funadhoo island. Directions will not be available.");
-            }
-          }
-        },
-        err => {
-          console.warn("Location permission denied or error:", err);
-          if (!isMobileDevice()) {
-            alert("Unable to get your location on desktop. Directions may not work correctly.");
-          }
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
-    }
-
-    document.getElementById("dropdown").addEventListener("input", e => {
-      clearTimeout(debounceTimer);
-      const val = e.target.value.trim();
-      debounceTimer = setTimeout(() => {
-        if (val.length === 0) {
-          resetView();
-          return;
-        }
-        zoomToHouse(val);
-      }, 300);
-    });
-
-    document.getElementById("clear-dropdown").addEventListener("click", resetView);
-
-    document.getElementById("googlemaps-btn").addEventListener("click", () => {
-      if (currentLatLng) {
-        window.open(`https://www.google.com/maps?q=${currentLatLng.lat},${currentLatLng.lng}&z=18&t=k`, "_blank");
-      }
-    });
-
-    document.getElementById("directions-btn").addEventListener("click", () => {
-      if (!currentLatLng) {
-        alert("Select a house first.");
-        return;
-      }
-      if (!userLocation) {
-        alert("User location not available. Please allow location permissions.");
-        return;
-      }
-
-      const insideFunadhoo =
-        userLocation.lat >= funadhooBounds.south &&
-        userLocation.lat <= funadhooBounds.north &&
-        userLocation.lng >= funadhooBounds.west &&
-        userLocation.lng <= funadhooBounds.east;
-
-      if (!insideFunadhoo && !isMobileDevice()) {
-        alert("You are outside Funadhoo. Directions are only available within the island.");
-        return;
-      }
-
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${currentLatLng.lat},${currentLatLng.lng}&travelmode=walking`;
-      window.open(url, "_blank");
-    });
-
-    document.getElementById("share-btn").addEventListener("click", () => {
-      if (!currentLatLng) return;
-      const link = `https://maps.google.com/?q=${currentLatLng.lat},${currentLatLng.lng}`;
-      const text = `Location of ${currentHouseName}: ${link}`;
-      if (navigator.share) {
-        navigator.share({ title: currentHouseName, text, url: link }).catch(console.error);
-      } else {
-        navigator.clipboard.writeText(text)
-          .then(() => alert("Link copied to clipboard:\n\n" + text))
-          .catch(() => prompt("Copy this location link:", text));
-      }
-    });
-
-    document.getElementById("reset-btn").addEventListener("click", resetView);
-
-    document.getElementById("retry-btn").addEventListener("click", () => {
-      document.getElementById("loader").textContent = "Loading map data...";
-      loadHouses();
-    });
-
-    // Load Google Maps script dynamically with callback
     function loadGoogleMapsScript() {
       const script = document.createElement("script");
       script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&libraries=places&callback=initMap";
       script.defer = true;
       script.async = true;
-      window.initMap = initMap;
       document.head.appendChild(script);
     }
 
-    // Start loading Google Maps
+    function loadHouses() {
+      fetch("https://script.google.com/macros/s/AKfycbyaX0GcQcoVr7dIxSDepNDS3EnY5_lIC1al8qSu75edHDCiVHiQ7P2M9y3GuCFTkXEe/exec")
+        .then((res) => res.json())
+        .then((data) => {
+          houseData = data;
+          const datalist = document.getElementById("house-list");
+          datalist.innerHTML = "";
+          houseData.forEach(({ name }) => {
+            const option = document.createElement("option");
+            option.value = name;
+            datalist.appendChild(option);
+          });
+          document.getElementById("loader").style.display = "none";
+        })
+        .catch((err) => {
+          alert("Error loading house data.");
+          console.error(err);
+        });
+    }
 
+    function placeMarker(name, lat, lng) {
+      if (currentMarker) currentMarker.setMap(null);
+      const position = { lat, lng };
+      currentMarker = new google.maps.Marker({
+        position,
+        map,
+        title: name
+      });
+      map.panTo(position);
+      document.getElementById("reset-btn").style.display = "inline-block";
 
-// On load
-window.onload = () => {
-  document.getElementById("reset-btn").style.display = "none";  // hide reset on load
-  loadHouses();
-  requestUserLocation();
-};
-</script>
+      // Setup button actions
+      document.getElementById("directions-btn").onclick = () => {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`);
+      };
+      document.getElementById("open-maps-btn").onclick = () => {
+        window.open(`https://maps.google.com/?q=${lat},${lng}`);
+      };
+      document.getElementById("share-btn").onclick = () => {
+        const url = `https://maps.google.com/?q=${lat},${lng}`;
+        navigator.clipboard.writeText(url);
+        alert("Location copied to clipboard.");
+      };
+    }
 
-<!-- PWA Installation Script -->
-<script src="https://ahmedsharyph.github.io/funatrace/install.js" defer></script>
+    function requestUserLocation() {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        const inside = latitude >= funadhooBounds.south && latitude <= funadhooBounds.north &&
+                       longitude >= funadhooBounds.west && longitude <= funadhooBounds.east;
+        if (inside) {
+          map.panTo({ lat: latitude, lng: longitude });
+        } else {
+          console.warn("User outside Funadhoo bounds.");
+        }
+      });
+    }
+
+    // Search input handling
+    document.getElementById("search-input").addEventListener("change", (e) => {
+      const query = e.target.value.trim();
+      const match = houseData.find((h) => h.name === query);
+      if (match) {
+        placeMarker(match.name, parseFloat(match.lat), parseFloat(match.lng));
+      }
+    });
+
+    document.getElementById("clear-dropdown").onclick = () => {
+      document.getElementById("search-input").value = "";
+      document.getElementById("house-list").innerHTML = "";
+    };
+
+    document.getElementById("reset-btn").onclick = () => {
+      if (currentMarker) currentMarker.setMap(null);
+      currentMarker = null;
+      map.panTo({ lat: 6.1555, lng: 73.2855 });
+      document.getElementById("reset-btn").style.display = "none";
+    };
+
+    // Init loader
+    window.onload = () => {
+      document.getElementById("reset-btn").style.display = "none";
+      loadGoogleMapsScript();
+    };
+  </script>
 </body>
 </html>
