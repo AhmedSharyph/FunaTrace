@@ -69,18 +69,33 @@
       color: #666;
     }
 
-     #floating-button-container {
-      position: absolute;
-      top: 265px;
-      right: 10px;
-      z-index: 1600;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: flex-end;
-      width: 220px;
-      pointer-events: auto;
-    }
+    #floating-button-container {
+  position: absolute;
+  z-index: 1600;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  width: 220px;
+  pointer-events: auto;
+}
+
+/* Default: Desktop — below fullscreen button */
+@media (min-width: 768px) {
+  #floating-button-container {
+    top: 65px; /* Adjust based on your fullscreen control */
+    right: 10px;
+  }
+}
+
+/* Mobile (phones and iOS) — top-right corner */
+@media (max-width: 767px) {
+  #floating-button-container {
+    top: 10px;
+    right: 10px;
+  }
+}
+
     .map-button {
       width: 100%;
       padding: 10px 16px;
