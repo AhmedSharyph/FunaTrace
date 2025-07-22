@@ -22,7 +22,3 @@ window.addEventListener('beforeinstallprompt', (e) => {
     });
   });
 });
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('https://ahmedsharyph.github.io/funatrace/service-worker.js');
-}
