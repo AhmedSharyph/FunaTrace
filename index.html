@@ -2,22 +2,275 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="FunaTrace helps you find every address in Sh. Funadhoo with pinpoint accuracy. The island's most reliable location finder.">
-  <meta name="theme-color" content="#00bcd4" />
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="ft_logo.png" />
-  <meta name="apple-mobile-web-app-title" content="FunaTrace">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="description" content="FunaTrace helps you find every address in Sh. Funadhoo with pinpoint accuracy.">
+
+  <!-- PWA Meta -->
+  <link rel="manifest" href="https://ahmedsharyph.github.io/funatrace/manifest.json">
+  <meta name="theme-color" content="#00bcd4">
+  <link rel="apple-touch-icon" href="https://ahmedsharyph.github.io/funatrace/ft_logo.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="stylesheet" href="style.css">
-  <title>FunaTrace</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="FunaTrace">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    input, button { font-size: 16px; }
+
+    #map { height: 85vh; width: 100%; }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      flex-wrap: wrap;
+    }
+    .app-logo { width: 48px; height: 48px; margin-right: 1rem; }
+    .app-title { font-size: 1.5rem; font-weight: bold; color: #007C91; }
+    .app-description { font-size: 1rem; color: #555; }
+
+    .dropdown-container {
+      padding: 10px;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+    }
+    #dropdown {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    #clear-dropdown {
+      margin-left: 8px;
+      padding: 8px 12px;
+      border: none;
+      background: #eee;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #loader {
+      text-align: center;
+      padding: 10px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    #floating-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1600;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+      width: 220px;
+      pointer-events: auto;
+    }
+    .map-button {
+      width: 100%;
+      padding: 10px 16px;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      cursor: pointer;
+      text-align: left;
+    }
+    #directions-btn { background: #f39c12; }
+    #googlemaps-btn { background: #1a73e8; }
+    #share-btn { background: #4caf50; }
+    #reset-btn { background: #e74c3c; text-align: center; display: none; }
+
+    @media (max-width: 480px) {
+      #floating-button-container { top: 10px; right: 10px; width: auto; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to FunaTrace</h1>
-  <p>This PWA helps you find house addresses in Sh. Funadhoo.</p>
+  <div class="app-header">
+    <img src="https://ahmedsharyph.github.io/funatrace/ft_logo.png" alt="FunaTrace Logo" class="app-logo">
+    <div>
+      <div class="app-title">FunaTrace</div>
+      <div class="app-description">Funadhoo Location Finder</div>
+    </div>
+  </div>
 
-  <script src="install.js"></script>
-  <script src="service-worker-register.js"></script>
+  <div class="dropdown-container">
+    <input id="dropdown" list="houses-list" placeholder="Search..." autocomplete="off" />
+    <button id="clear-dropdown" title="Clear">❌</button>
+    <datalist id="houses-list"></datalist>
+  </div>
+
+  <div id="loader">Loading map data...</div>
+  <div id="map"></div>
+
+  <div id="floating-button-container">
+    <button id="directions-btn" class="map-button" style="display:none;">🤾 Get Directions</button>
+    <button id="googlemaps-btn" class="map-button" style="display:none;">🗺️ Open in Maps</button>
+    <button id="share-btn" class="map-button" style="display:none;">📤 Share Location</button>
+    <button id="reset-btn" class="map-button">🔄 Reset View</button>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz8_X-uaxok6xQK0mog2hIvYVN_D3ydOPGOHdXC8SZ8tHulyVo2xm76NSTHCWaQ_8KzIg/exec?type=address";
+    const defaultCenter = { lat: 6.1535, lng: 73.28975 };
+    const defaultZoom = 15;
+    const funadhooBounds = { north: 6.1700, south: 6.1370, east: 73.2953, west: 73.2842 };
+    let map, marker, userMarker, houseData = [], currentHouse = null, userLocation = null;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: defaultCenter,
+        zoom: defaultZoom,
+        gestureHandling: 'greedy',
+        mapTypeId: google.maps.MapTypeId.SATELLITE,
+      });
+
+      map.addListener("idle", () => {
+        document.getElementById("reset-btn").style.display = isMapAtDefaultView() ? "none" : "inline-block";
+      });
+
+      document.getElementById("dropdown").addEventListener("change", e => zoomToHouse(e.target.value.trim()));
+      document.getElementById("clear-dropdown").addEventListener("click", resetView);
+      document.getElementById("reset-btn").addEventListener("click", resetView);
+
+      document.getElementById("googlemaps-btn").addEventListener("click", () => {
+        if (!currentHouse) return;
+        const lat = currentHouse.lat;
+        const lng = currentHouse.lng;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (isIOS) {
+          const useApple = confirm("Open in Apple Maps?\nCancel = Google Maps");
+          if (useApple) {
+            window.location.href = `maps://?q=${lat},${lng}`;
+          } else {
+            window.open(`https://www.google.com/maps?q=${lat},${lng}&z=18&t=k`, '_blank');
+          }
+        } else {
+          window.open(`https://www.google.com/maps?q=${lat},${lng}&z=18&t=k`, '_blank');
+        }
+      });
+
+      document.getElementById("directions-btn").addEventListener("click", () => {
+        if (!currentHouse || !userLocation) return alert("Select a house and allow location access.");
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${currentHouse.lat},${currentHouse.lng}&travelmode=walking`;
+        window.open(url, '_blank');
+      });
+
+      document.getElementById("share-btn").addEventListener("click", () => {
+        if (!currentHouse) return;
+        const link = `https://maps.google.com/?q=${currentHouse.lat},${currentHouse.lng}`;
+        const text = `Location of ${currentHouse.name}: ${link}`;
+        if (navigator.share) {
+          navigator.share({ title: currentHouse.name, text, url: link }).catch(console.error);
+        } else {
+          navigator.clipboard.writeText(text)
+            .then(() => alert("Copied to clipboard:\n\n" + text))
+            .catch(() => prompt("Copy this:", text));
+        }
+      });
+
+      loadHouses();
+      requestUserLocation();
+    }
+
+    function isMapAtDefaultView() {
+      const center = map.getCenter();
+      return Math.abs(center.lat() - defaultCenter.lat) < 0.0001 &&
+             Math.abs(center.lng() - defaultCenter.lng) < 0.0001 &&
+             map.getZoom() === defaultZoom;
+    }
+
+    function resetView() {
+      if (marker) marker.setMap(null);
+      if (userMarker) userMarker.setMap(null);
+      currentHouse = null;
+      document.getElementById("dropdown").value = '';
+      ["directions-btn", "googlemaps-btn", "share-btn", "reset-btn"].forEach(id =>
+        document.getElementById(id).style.display = "none"
+      );
+      map.setCenter(defaultCenter);
+      map.setZoom(defaultZoom);
+    }
+
+    async function loadHouses() {
+      try {
+        const res = await fetch(GAS_URL);
+        houseData = await res.json();
+        document.getElementById("loader").style.display = "none";
+        const datalist = document.getElementById("houses-list");
+        datalist.innerHTML = '';
+        houseData.forEach(h => {
+          if (h.name && !isNaN(h.lat) && !isNaN(h.lng)) {
+            const option = document.createElement("option");
+            option.value = h.name;
+            datalist.appendChild(option);
+          }
+        });
+      } catch (e) {
+        alert("Failed to load house data.");
+        console.error(e);
+      }
+    }
+
+    function zoomToHouse(name) {
+      if (marker) marker.setMap(null);
+      const house = houseData.find(h => h.name?.toLowerCase() === name.toLowerCase());
+      if (!house || isNaN(house.lat) || isNaN(house.lng)) return alert("Invalid or unknown house.");
+      marker = new google.maps.Marker({ position: { lat: Number(house.lat), lng: Number(house.lng) }, map, title: house.name });
+      map.setCenter(marker.getPosition());
+      map.setZoom(18);
+      currentHouse = house;
+      ["directions-btn", "googlemaps-btn", "share-btn"].forEach(id =>
+        document.getElementById(id).style.display = "inline-block"
+      );
+    }
+
+    function requestUserLocation() {
+      if (!navigator.geolocation) return alert("Geolocation not supported.");
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          const inside = userLocation.lat >= funadhooBounds.south && userLocation.lat <= funadhooBounds.north &&
+                         userLocation.lng >= funadhooBounds.west && userLocation.lng <= funadhooBounds.east;
+          if (inside) {
+            userMarker = new google.maps.Marker({
+              position: userLocation,
+              map,
+              title: "You are here",
+              icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            });
+          } else {
+            alert("Your location appears outside Funadhoo.");
+          }
+        },
+        err => console.warn("Location error:", err),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+  </script>
+
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&callback=initMap">
+  </script>
+  <script src="https://ahmedsharyph.github.io/funatrace/install.js" defer></script>
 </body>
 </html>
